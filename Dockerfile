@@ -1,18 +1,18 @@
-# Use Python 3.13 como base
+# Base Python 3.13 slim
 FROM python:3.13-slim
 
-# Definir variáveis de ambiente
+# Variáveis de ambiente
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV DJANGO_SETTINGS_MODULE=app.settings
 
-# Definir diretório de trabalho
+# Diretório de trabalho
 WORKDIR /app
 
-# Instalar dependências do sistema
+# Dependências do sistema para PostgreSQL e build de pacotes Python
 RUN apt-get update && apt-get install -y \
     gcc \
-    default-libmysqlclient-dev \
+    libpq-dev \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
@@ -26,28 +26,22 @@ COPY . .
 # Criar diretório para arquivos estáticos
 RUN mkdir -p /app/staticfiles
 
-# ========================================
-# Argumentos de Build (baseados no seu .env)
-# ========================================
+# Argumentos de build (opcional)
 ARG SECRET_KEY
 ARG DEBUG=True
 ARG ALLOWED_HOSTS="127.0.0.1,localhost,testserver"
-ARG DATABASE_ENGINE="django.db.backends.sqlite3"
-ARG DATABASE_NAME="db.sqlite3"
 
-# Converter argumentos de build em variáveis de ambiente
+# Transformar args em variáveis de ambiente
 ENV SECRET_KEY=${SECRET_KEY}
 ENV DEBUG=${DEBUG}
 ENV ALLOWED_HOSTS=${ALLOWED_HOSTS}
-ENV DATABASE_ENGINE=${DATABASE_ENGINE}
-ENV DATABASE_NAME=${DATABASE_NAME}
 
-# Copiar e tornar executável o entrypoint
+# Copiar entrypoint
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
-# Expor porta
+# Expor porta do Django
 EXPOSE 48321
 
-# Comando padrão para iniciar o servidor
-CMD ["python", "manage.py", "runserver", "0.0.0.0:48321"]
+# CMD padrão usando entrypoint
+CMD ["/app/entrypoint.sh", "python", "manage.py", "runserver", "0.0.0.0:48321"]
