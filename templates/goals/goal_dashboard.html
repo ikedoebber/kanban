@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Dashboard de Metas{% endblock %}
+
+{% block extra_css %}
+    <link href="{% static 'css/goal-board.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<h1><i class="fas fa-chart-bar me-2"></i> Dashboard de Metas</h1>
+
+<div class="stats-grid">
+    <div class="stat-card primary">
+        <h6>Total</h6>
+        <h2>{{ total_goals }}</h2>
+        <small>Metas</small>
+    </div>
+    
+    <div class="stat-card warning">
+        <h6>Pendentes</h6>
+        <h2>{{ pending_goals }}</h2>
+        <small>Não Iniciadas</small>
+    </div>
+    
+    <div class="stat-card info">
+        <h6>Em Progresso</h6>
+        <h2>{{ in_progress_goals }}</h2>
+        <small>Trabalhando</small>
+    </div>
+    
+    <div class="stat-card success">
+        <h6>Concluídas</h6>
+        <h2>{{ completed_goals }}</h2>
+        <small>Finalizadas</small>
+    </div>
+</div>
+
+<div class="dashboard-card">
+    <div class="card-header">
+        <h5><i class="fas fa-clock me-2"></i> Metas Recentes</h5>
+    </div>
+    <div class="card-body">
+        {% if recent_goals %}
+            <div class="table-responsive">
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Prioridade</th>
+                            <th>Status</th>
+                            <th>Período</th>
+                            <th>Data de criação</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for goal in recent_goals %}
+                            <tr>
+                                <td class="fw-medium">{{ goal.title }}</td>
+                                <td>
+                                    <span class="priority-badge {{ goal.priority }}">
+                                        {{ goal.get_priority_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="status-badge {{ goal.status }}">
+                                        {{ goal.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="period-badge">{{ goal.get_period_display }}</span>
+                                </td>
+                                <td>{{ goal.created_at|date:"d/m/Y H:i" }}</td>
+                                <td class="text-center">
+                                    <a href="{% url 'goals:goal_detail' goal.pk %}" 
+                                       class="action-btn" 
+                                       title="Ver detalhes">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-info-circle me-1"></i> Nenhuma meta encontrada.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

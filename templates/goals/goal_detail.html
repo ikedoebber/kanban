@@ -1,0 +1,141 @@
+{% extends 'base_blank.html' %}
+{% load static %}
+{% block title %}{{ goal.title }}{% endblock %}
+
+{% block extra_css %}
+    <link href="{% static 'css/goal-board.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="detail-layout">
+    <div class="detail-main">
+        <div class="card detail-card">
+            <div class="card-header">
+                <h2 class="mb-0">{{ goal.title }}</h2>
+                <div class="action-buttons">
+                    <a href="{% url 'goals:goal_update' goal.pk %}" class="btn btn-warning" title="Editar meta">
+                        <i class="fas fa-edit me-1"></i> Editar
+                    </a>
+                    <a href="{% url 'goals:goal_delete' goal.pk %}" class="btn btn-danger" title="Excluir meta">
+                        <i class="fas fa-trash me-1"></i> Excluir
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="info-section">
+                    <div class="info-group">
+                        <p class="info-item"><strong>Prioridade:</strong> 
+                            <span class="badge priority-badge {{ goal.priority }}">
+                                {{ goal.get_priority_display }}
+                            </span>
+                        </p>
+                        <p class="info-item"><strong>Status:</strong> 
+                            <span class="badge status-badge {{ goal.status }}">
+                                {{ goal.get_status_display }}
+                            </span>
+                        </p>
+                        <p class="info-item"><strong>Período:</strong> 
+                            <span class="badge period-badge">{{ goal.get_period_display }}</span>
+                        </p>
+                        {% if goal.is_overdue %}
+                            <p class="info-item overdue-label">
+                                <i class="fas fa-exclamation-triangle me-1"></i> Atrasada!
+                            </p>
+                        {% endif %}
+                    </div>
+                    <div class="info-group">
+                        <p class="info-item"><i class="fas fa-user-edit me-1"></i> <strong>Criado por:</strong> {{ goal.created_by.get_full_name|default:goal.created_by.username }}</p>
+                    </div>
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-group">
+                        <p class="info-item"><i class="fas fa-plus-circle me-1"></i> <strong>Data de criação:</strong> {{ goal.created_at|date:"d/m/Y H:i" }}</p>
+                        <p class="info-item"><i class="fas fa-sync me-1"></i> <strong>Última atualização:</strong> {{ goal.updated_at|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    <div class="info-group">
+                        {% if goal.due_date %}
+                            <p class="info-item"><i class="fas fa-calendar me-1"></i> <strong>Data de vencimento:</strong> {{ goal.due_date|date:"d/m/Y H:i" }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if goal.description %}
+                    <div class="description-section">
+                        <h5><i class="fas fa-align-left me-1"></i> Descrição:</h5>
+                        <div class="description-content">
+                            {{ goal.description|linebreaks }}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="detail-sidebar">
+        <div class="card sidebar-card">
+            <div class="card-header">
+                <h5><i class="fas fa-bolt me-1"></i> Ações Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <form id="statusForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="statusSelect" class="form-label">Alterar Status</label>
+                        <select class="form-select" id="statusSelect" name="status">
+                            {% for value, label in goal.STATUS_CHOICES %}
+                                <option value="{{ value }}" {% if goal.status == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-sync me-1"></i> Atualizar Status
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#statusForm').on('submit', function(e) {
+        e.preventDefault();
+        var status = $('#statusSelect').val();
+        var goalId = {{ goal.pk }};
+        
+        $.ajax({
+            url: '{% url "goals:update_period" %}',
+            method: 'POST',
+            data: {
+                'status': status,
+                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+            },
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            beforeSend: function() {
+                $('#statusForm button').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Atualizando...');
+            },
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert('Erro ao atualizar status: ' + (response.message || 'Tente novamente'));
+                }
+            },
+            error: function() {
+                alert('Erro de conexão. Tente novamente.');
+            },
+            complete: function() {
+                $('#statusForm button').prop('disabled', false).html('<i class="fas fa-sync me-1"></i> Atualizar Status');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

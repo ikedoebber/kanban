@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Dashboard de Tarefas{% endblock %}
+
+{% block extra_css %}
+    <link href="{% static 'css/task-board.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<h1><i class="fas fa-chart-bar me-2"></i> Dashboard de Tarefas</h1>
+
+<div class="stats-grid">
+    <div class="stat-card primary">
+        <h6>Total</h6>
+        <h2>{{ total_tasks }}</h2>
+        <small>Tarefas</small>
+    </div>
+    
+    <div class="stat-card warning">
+        <h6>Pendentes</h6>
+        <h2>{{ pending_tasks }}</h2>
+        <small>A Fazer</small>
+    </div>
+    
+    <div class="stat-card info">
+        <h6>Em Progresso</h6>
+        <h2>{{ in_progress_tasks }}</h2>
+        <small>Trabalhando</small>
+    </div>
+    
+    <div class="stat-card success">
+        <h6>Concluídas</h6>
+        <h2>{{ completed_tasks }}</h2>
+        <small>Finalizadas</small>
+    </div>
+</div>
+
+<div class="dashboard-card">
+    <div class="card-header">
+        <h5><i class="fas fa-clock me-2"></i> Tarefas Recentes</h5>
+    </div>
+    <div class="card-body">
+        {% if recent_tasks %}
+            <div class="table-responsive">
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Prioridade</th>
+                            <th>Status</th>
+                            <th>Atribuído para</th>
+                            <th>Data de criação</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in recent_tasks %}
+                            <tr>
+                                <td>{{ task.title }}</td>
+                                <td>
+                                    <span class="priority-badge {{ task.priority }}">
+                                        {{ task.get_priority_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="status-badge {{ task.status }}">
+                                        {{ task.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ task.assigned_to.get_full_name|default:task.assigned_to.username }}</td>
+                                <td>{{ task.created_at|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <a href="{% url 'tasks:task_detail' task.pk %}" class="action-btn">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                Nenhuma tarefa encontrada.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Lista de Compromissos{% endblock %}
+
+{% block extra_css %}
+    <link href="{% static 'css/appointment-board.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-calendar-alt me-2"></i> Lista de Compromissos</h1>
+    <div class="action-buttons">
+        <a href="{% url 'appointments:appointment_calendar' %}" class="btn btn-secondary">
+            <i class="fas fa-calendar me-1"></i> Calendário
+        </a>
+        <a href="{% url 'appointments:appointment_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i> Novo Compromisso
+        </a>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card filters-card">
+    <div class="card-body">
+        <form method="get" class="filters-form">
+            <div class="form-field">
+                <label for="search" class="form-label">Buscar</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       value="{{ request.GET.search }}" placeholder="Título, descrição ou local">
+            </div>
+            <div class="form-field">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">Todos</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-field">
+                <label for="priority" class="form-label">Prioridade</label>
+                <select class="form-select" id="priority" name="priority">
+                    <option value="">Todas</option>
+                    {% for value, label in priority_choices %}
+                        <option value="{{ value }}" {% if request.GET.priority == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-field">
+                <label for="type" class="form-label">Tipo</label>
+                <select class="form-select" id="type" name="type">
+                    <option value="">Todos</option>
+                    {% for value, label in type_choices %}
+                        <option value="{{ value }}" {% if request.GET.type == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-field">
+                <label for="date" class="form-label">Data</label>
+                <input type="date" class="form-control" id="date" name="date" value="{{ request.GET.date }}">
+            </div>
+            <div class="form-field">
+                <button type="submit" class="btn btn-primary filter-btn" title="Filtrar compromissos">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lista de compromissos -->
+<div class="appointments-grid">
+    {% for appointment in page_obj %}
+        <div class="appointment-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    {{ appointment.title }}
+                    {% if appointment.is_today %}
+                        <span class="badge today-badge">Hoje</span>
+                    {% elif appointment.is_upcoming %}
+                        <span class="badge upcoming-badge">Futuro</span>
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="card-description">{{ appointment.description|truncatewords:15 }}</p>
+                
+                <div class="badge-group">
+                    <span class="badge priority-badge {{ appointment.priority }}">
+                        {{ appointment.get_priority_display }}
+                    </span>
+                    <span class="badge status-badge {{ appointment.status }}">
+                        {{ appointment.get_status_display }}
+                    </span>
+                    <span class="badge type-badge">{{ appointment.get_appointment_type_display }}</span>
+                </div>
+                
+                <div class="card-info">
+                    <div class="info-item">
+                        <i class="fas fa-calendar me-1"></i> {{ appointment.date|date:"d/m/Y" }}
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-clock me-1"></i> {{ appointment.start_time|time:"H:i" }} - {{ appointment.end_time|time:"H:i" }}
+                    </div>
+                    {% if appointment.location %}
+                        <div class="info-item">
+                            <i class="fas fa-map-marker-alt me-1"></i> {{ appointment.location|truncatewords:5 }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'appointments:appointment_detail' appointment.pk %}" class="btn btn-outline-primary" title="Ver detalhes">
+                    <i class="fas fa-eye me-1"></i> Ver
+                </a>
+                <a href="{% url 'appointments:appointment_update' appointment.pk %}" class="btn btn-outline-secondary" title="Editar compromisso">
+                    <i class="fas fa-edit me-1"></i> Editar
+                </a>
+            </div>
+        </div>
+    {% empty %}
+        <div class="empty-state">
+            <i class="fas fa-info-circle me-2"></i> Nenhum compromisso encontrado.
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Paginação -->
+{% if page_obj.has_other_pages %}
+    <nav class="pagination-nav" aria-label="Paginação de compromissos">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" aria-label="Página anterior">
+                        &laquo; Anterior
+                    </a>
+                </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" aria-label="Próxima página">
+                        Próxima &raquo;
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+{% endblock %}

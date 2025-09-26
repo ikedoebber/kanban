@@ -1,0 +1,488 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Dashboard Principal - Kanban{% endblock %}
+{% block content %}
+    <div class="container-fluid py-4" role="main" aria-label="Dashboard Principal">
+        <!-- Token CSRF para requisições AJAX -->
+        <input type="hidden" name="csrfmiddlewaretoken" id="csrf-token" value="{{ csrf_token }}">
+        <div class="row">
+            <!-- Seção de Tarefas Kanban -->
+            <div class="col-12 mb-4">
+                <div class="card shadow-sm rounded-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-tasks me-2"></i>Tarefas</h5>
+                        <a href="{% url 'tasks:task_create' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus me-1"></i>Nova Tarefa
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="tasks-board" id="tasks-board"> <!-- ✅ Adicionado ID -->
+                            <!-- Para Fazer -->
+                            <div class="task-column todo">
+                                <div class="column-header">
+                                    <i class="fas fa-list me-2"></i>Para Fazer
+                                    <span class="task-count">{{ todo_tasks|length }}</span>
+                                </div>
+                                <div class="column-content">
+                                    {% for task in todo_tasks %}
+                                        <div class="task-card" draggable="true" data-task-id="{{ task.pk }}" data-item-type="task">
+                                            <div class="task-header">
+                                                <h6 class="task-title">{{ task.title }}</h6>
+                                                {% if task.due_date %}
+                                                    <small class="due-date">{{ task.due_date|date:"d/m" }}</small>
+                                                {% endif %}
+                                            </div>
+                                            <div class="task-body">
+                                                <div class="task-meta">
+                                                    <span class="badge priority-badge {% if task.priority == 'high' %}high{% elif task.priority == 'medium' %}medium{% else %}low{% endif %}">
+                                                        {{ task.get_priority_display }}
+                                                    </span>
+                                                </div>
+                                                <div class="task-actions">
+                                                    <a href="{% url 'tasks:task_update' task.pk %}" class="action-btn" title="Editar">
+                                                        <i class="fas fa-edit fa-sm"></i>
+                                                    </a>
+                                                    <a href="{% url 'tasks:task_delete' task.pk %}" class="action-btn" title="Excluir">
+                                                        <i class="fas fa-trash text-danger"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% empty %}
+                                        <div class="empty-state">
+                                            <i class="fas fa-inbox"></i>
+                                            <p>Nenhuma tarefa</p>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <!-- Fazendo -->
+                            <div class="task-column in-progress">
+                                <div class="column-header">
+                                    <i class="fas fa-sync me-2"></i>Fazendo
+                                    <span class="task-count">{{ in_progress_tasks|length }}</span>
+                                </div>
+                                <div class="column-content">
+                                    {% for task in in_progress_tasks %}
+                                        <div class="task-card" draggable="true" data-task-id="{{ task.pk }}" data-item-type="task">
+                                            <div class="task-header">
+                                                <h6 class="task-title">{{ task.title }}</h6>
+                                                {% if task.due_date %}
+                                                    <small class="due-date">{{ task.due_date|date:"d/m" }}</small>
+                                                {% endif %}
+                                            </div>
+                                            <div class="task-body">
+                                                <div class="task-meta">
+                                                    <span class="badge priority-badge {% if task.priority == 'high' %}high{% elif task.priority == 'medium' %}medium{% else %}low{% endif %}">
+                                                        {{ task.get_priority_display }}
+                                                    </span>
+                                                </div>
+                                                <div class="task-actions">
+                                                    <a href="{% url 'tasks:task_update' task.pk %}" class="action-btn" title="Editar">
+                                                        <i class="fas fa-edit fa-sm"></i>
+                                                    </a>
+                                                    <a href="{% url 'tasks:task_delete' task.pk %}" class="action-btn" title="Excluir">
+                                                        <i class="fas fa-trash text-danger"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% empty %}
+                                        <div class="empty-state">
+                                            <i class="fas fa-inbox"></i>
+                                            <p>Nenhuma tarefa</p>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <!-- Finalizado -->
+                            <div class="task-column done">
+                                <div class="column-header">
+                                    <i class="fas fa-check-circle me-2"></i>Finalizado
+                                    <span class="task-count">{{ done_tasks|length }}</span>
+                                </div>
+                                <div class="column-content">
+                                    {% for task in done_tasks %}
+                                        <div class="task-card" draggable="true" data-task-id="{{ task.pk }}" data-item-type="task">
+                                            <div class="task-header">
+                                                <h6 class="task-title">{{ task.title }}</h6>
+                                                {% if task.due_date %}
+                                                    <small class="due-date">{{ task.due_date|date:"d/m" }}</small>
+                                                {% endif %}
+                                            </div>
+                                            <div class="task-body">
+                                                <div class="task-meta">
+                                                    <span class="badge priority-badge {% if task.priority == 'high' %}high{% elif task.priority == 'medium' %}medium{% else %}low{% endif %}">
+                                                        {{ task.get_priority_display }}
+                                                    </span>
+                                                </div>
+                                                <div class="task-actions">
+                                                    <a href="{% url 'tasks:task_update' task.pk %}" class="action-btn" title="Editar">
+                                                        <i class="fas fa-edit fa-sm"></i>
+                                                    </a>
+                                                    <a href="{% url 'tasks:task_delete' task.pk %}" class="action-btn" title="Excluir">
+                                                        <i class="fas fa-trash text-danger"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% empty %}
+                                        <div class="empty-state">
+                                            <i class="fas fa-inbox"></i>
+                                            <p>Nenhuma tarefa</p>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Seção de Metas -->
+            <div class="col-12 mb-4">
+                <div class="card shadow-sm rounded-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-bullseye me-2"></i>Metas</h5>
+                        <a href="{% url 'goals:goal_create' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus me-1"></i>Nova Meta
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="goals-board" id="goals-board"> <!-- ✅ Adicionado ID -->
+                            <!-- Semanal -->
+                            <div class="goal-column weekly">
+                                <div class="column-header">
+                                    <i class="fas fa-calendar-week me-2"></i>Semanal
+                                    <span class="task-count">{{ goals_weekly|length }}</span>
+                                </div>
+                                <div class="column-content">
+                                    {% for goal in goals_weekly %}
+                                        <div class="goal-card" draggable="true" data-goal-id="{{ goal.pk }}" data-item-type="goal">
+                                            <div class="goal-card-header">
+                                                <h6 class="goal-title">{{ goal.title }}</h6>
+                                            </div>
+                                            <div class="goal-card-body">
+                                                {% if goal.description %}
+                                                    <p class="goal-description">{{ goal.description|truncatewords:6 }}</p>
+                                                {% endif %}
+                                                <div class="goal-meta">
+                                                    <span class="badge priority-badge {% if goal.priority == 'high' %}high{% elif goal.priority == 'medium' %}medium{% else %}low{% endif %}">
+                                                        {{ goal.get_priority_display }}
+                                                    </span>
+                                                    <span class="badge status-badge {% if goal.status == 'completed' %}completed{% elif goal.status == 'in_progress' %}in_progress{% else %}pending{% endif %}">
+                                                        {{ goal.get_status_display }}
+                                                    </span>
+                                                </div>
+                                                <div class="goal-actions">
+                                                        <div class="goal-action-buttons d-flex gap-1">
+                                                            <a href="{% url 'goals:goal_update' goal.pk %}" 
+                                                            class="btn btn-sm btn-outline-primary p-1" 
+                                                            title="Editar meta" 
+                                                            aria-label="Editar meta">
+                                                                <i class="fas fa-edit fa-sm"></i>
+                                                            </a>
+                                                            <a href="{% url 'goals:goal_delete' goal.pk %}" 
+                                                            class="btn btn-sm btn-outline-danger p-1" 
+                                                            title="Excluir meta" 
+                                                            aria-label="Excluir meta">
+                                                                <i class="fas fa-trash fa-sm"></i>
+                                                            </a>
+                                                        </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% empty %}
+                                        <div class="empty-state">
+                                            <i class="fas fa-target"></i>
+                                            <p>Nenhuma meta</p>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <!-- Mensal -->
+                            <div class="goal-column monthly">
+                                <div class="column-header">
+                                    <i class="fas fa-calendar-alt me-2"></i>Mensal
+                                    <span class="task-count">{{ goals_monthly|length }}</span>
+                                </div>
+                                <div class="column-content">
+                                    {% for goal in goals_monthly %}
+                                        <div class="goal-card" draggable="true" data-goal-id="{{ goal.pk }}" data-item-type="goal">
+                                            <div class="goal-card-header">
+                                                <h6 class="goal-title">{{ goal.title }}</h6>
+                                            </div>
+                                            <div class="goal-card-body">
+                                                {% if goal.description %}
+                                                    <p class="goal-description">{{ goal.description|truncatewords:6 }}</p>
+                                                {% endif %}
+                                                <div class="goal-meta">
+                                                    <span class="badge priority-badge {% if goal.priority == 'high' %}high{% elif goal.priority == 'medium' %}medium{% else %}low{% endif %}">
+                                                        {{ goal.get_priority_display }}
+                                                    </span>
+                                                    <span class="badge status-badge {% if goal.status == 'completed' %}completed{% elif goal.status == 'in_progress' %}in_progress{% else %}pending{% endif %}">
+                                                        {{ goal.get_status_display }}
+                                                    </span>
+                                                </div>
+                                                <div class="goal-actions">
+                                                        <div class="goal-action-buttons d-flex gap-1">
+                                                            <a href="{% url 'goals:goal_update' goal.pk %}" 
+                                                            class="btn btn-sm btn-outline-primary p-1" 
+                                                            title="Editar meta" 
+                                                            aria-label="Editar meta">
+                                                                <i class="fas fa-edit fa-sm"></i>
+                                                            </a>
+                                                            <a href="{% url 'goals:goal_delete' goal.pk %}" 
+                                                            class="btn btn-sm btn-outline-danger p-1" 
+                                                            title="Excluir meta" 
+                                                            aria-label="Excluir meta">
+                                                                <i class="fas fa-trash fa-sm"></i>
+                                                            </a>
+                                                        </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% empty %}
+                                        <div class="empty-state">
+                                            <i class="fas fa-target"></i>
+                                            <p>Nenhuma meta</p>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <!-- Trimestral -->
+                            <div class="goal-column quarterly">
+                                <div class="column-header">
+                                    <i class="fas fa-calendar-check me-2"></i>Trimestral
+                                    <span class="task-count">{{ goals_quarterly|length }}</span>
+                                </div>
+                                <div class="column-content">
+                                    {% for goal in goals_quarterly %}
+                                        <div class="goal-card" draggable="true" data-goal-id="{{ goal.pk }}" data-item-type="goal">
+                                            <div class="goal-card-header">
+                                                <h6 class="goal-title">{{ goal.title }}</h6>
+                                            </div>
+                                            <div class="goal-card-body">
+                                                {% if goal.description %}
+                                                    <p class="goal-description">{{ goal.description|truncatewords:6 }}</p>
+                                                {% endif %}
+                                                <div class="goal-meta">
+                                                    <span class="badge priority-badge {% if goal.priority == 'high' %}high{% elif goal.priority == 'medium' %}medium{% else %}low{% endif %}">
+                                                        {{ goal.get_priority_display }}
+                                                    </span>
+                                                    <span class="badge status-badge {% if goal.status == 'completed' %}completed{% elif goal.status == 'in_progress' %}in_progress{% else %}pending{% endif %}">
+                                                        {{ goal.get_status_display }}
+                                                    </span>
+                                                </div>
+                                                <div class="goal-actions">
+                                                        <div class="goal-action-buttons d-flex gap-1">
+                                                            <a href="{% url 'goals:goal_update' goal.pk %}" 
+                                                            class="btn btn-sm btn-outline-primary p-1" 
+                                                            title="Editar meta" 
+                                                            aria-label="Editar meta">
+                                                                <i class="fas fa-edit fa-sm"></i>
+                                                            </a>
+                                                            <a href="{% url 'goals:goal_delete' goal.pk %}" 
+                                                            class="btn btn-sm btn-outline-danger p-1" 
+                                                            title="Excluir meta" 
+                                                            aria-label="Excluir meta">
+                                                                <i class="fas fa-trash fa-sm"></i>
+                                                            </a>
+                                                        </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% empty %}
+                                        <div class="empty-state">
+                                            <i class="fas fa-target"></i>
+                                            <p>Nenhuma meta</p>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <!-- Semestral -->
+                            <div class="goal-column biannual">
+                                <div class="column-header">
+                                    <i class="fas fa-calendar-plus me-2"></i>Semestral
+                                    <span class="task-count">{{ goals_biannual|length }}</span>
+                                </div>
+                                <div class="column-content">
+                                    {% for goal in goals_biannual %}  <!-- 👈 Variável correta -->
+                                        <div class="goal-card" draggable="true" data-goal-id="{{ goal.pk }}" data-item-type="goal">
+                                            <div class="goal-card-header">
+                                                <h6 class="goal-title">{{ goal.title }}</h6>
+                                            </div>
+                                            <div class="goal-card-body">
+                                                {% if goal.description %}
+                                                    <p class="goal-description">{{ goal.description|truncatewords:6 }}</p>
+                                                {% endif %}
+                                                <div class="goal-meta">
+                                                    <span class="badge priority-badge {% if goal.priority == 'high' %}high{% elif goal.priority == 'medium' %}medium{% else %}low{% endif %}">
+                                                        {{ goal.get_priority_display }}
+                                                    </span>
+                                                    <span class="badge status-badge {% if goal.status == 'completed' %}completed{% elif goal.status == 'in_progress' %}in_progress{% else %}pending{% endif %}">
+                                                        {{ goal.get_status_display }}
+                                                    </span>
+                                                </div>
+                                                <div class="goal-actions">
+                                                    <div class="goal-action-buttons d-flex gap-1">
+                                                        <a href="{% url 'goals:goal_update' goal.pk %}" 
+                                                        class="btn btn-sm btn-outline-primary p-1" 
+                                                        title="Editar meta" 
+                                                        aria-label="Editar meta">
+                                                            <i class="fas fa-edit fa-sm"></i>
+                                                        </a>
+                                                        <a href="{% url 'goals:goal_delete' goal.pk %}" 
+                                                        class="btn btn-sm btn-outline-danger p-1" 
+                                                        title="Excluir meta" 
+                                                        aria-label="Excluir meta">
+                                                            <i class="fas fa-trash fa-sm"></i>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% empty %}
+                                        <div class="empty-state">
+                                            <i class="fas fa-target"></i>
+                                            <p>Nenhuma meta</p>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <!-- Anual -->
+                            <div class="goal-column annual">
+                                <div class="column-header">
+                                    <i class="fas fa-calendar-day me-2"></i>Anual
+                                    <span class="task-count">{{ goals_annual|length }}</span>
+                                </div>
+                                <div class="column-content">
+                                    {% for goal in goals_annual %}
+                                        <div class="goal-card" draggable="true" data-goal-id="{{ goal.pk }}" data-item-type="goal">
+                                            <div class="goal-card-header">
+                                                <h6 class="goal-title">{{ goal.title }}</h6>
+                                            </div>
+                                            <div class="goal-card-body">
+                                                {% if goal.description %}
+                                                    <p class="goal-description">{{ goal.description|truncatewords:6 }}</p>
+                                                {% endif %}
+                                                <div class="goal-meta">
+                                                    <span class="badge priority-badge {% if goal.priority == 'high' %}high{% elif goal.priority == 'medium' %}medium{% else %}low{% endif %}">
+                                                        {{ goal.get_priority_display }}
+                                                    </span>
+                                                    <span class="badge status-badge {% if goal.status == 'completed' %}completed{% elif goal.status == 'in_progress' %}in_progress{% else %}pending{% endif %}">
+                                                        {{ goal.get_status_display }}
+                                                    </span>
+                                                </div>
+                                                <div class="goal-actions">
+                                                        <div class="goal-action-buttons d-flex gap-1">
+                                                            <a href="{% url 'goals:goal_update' goal.pk %}" 
+                                                            class="btn btn-sm btn-outline-primary p-1" 
+                                                            title="Editar meta" 
+                                                            aria-label="Editar meta">
+                                                                <i class="fas fa-edit fa-sm"></i>
+                                                            </a>
+                                                            <a href="{% url 'goals:goal_delete' goal.pk %}" 
+                                                            class="btn btn-sm btn-outline-danger p-1" 
+                                                            title="Excluir meta" 
+                                                            aria-label="Excluir meta">
+                                                                <i class="fas fa-trash fa-sm"></i>
+                                                            </a>
+                                                        </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% empty %}
+                                        <div class="empty-state">
+                                            <i class="fas fa-target"></i>
+                                            <p>Nenhuma meta</p>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Seção de Compromissos -->
+            <div class="col-12">
+                <div class="card shadow-sm rounded-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Compromissos</h5>
+                        <a href="{% url 'appointments:appointment_create' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus me-1"></i>Novo Compromisso
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        {% if all_recent_appointments %}
+                            <div class="appointment-card-container" id="appointments-container"> <!-- ✅ Adicionado ID -->
+                                {% for appointment in all_recent_appointments %}
+                                    <div class="compact-appointment-card {% if appointment.date == today %}card-today{% endif %} {% if appointment.priority == 'urgente' %}card-urgent{% endif %}">
+                                        <div class="status-indicator status-{{ appointment.status }}"></div>
+                                        <div class="compact-header">
+                                            <h6 class="appointment-title">
+                                                <i class="fas fa-calendar-check me-1"></i>
+                                                {{ appointment.title }}
+                                            </h6>
+                                            <div class="appointment-datetime">
+                                                <i class="fas fa-clock me-1"></i>
+                                                <span>{{ appointment.date|date:"d/m" }} - {{ appointment.start_time|time:"H:i" }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="compact-body">
+                                            {% if appointment.description %}
+                                                <p class="appointment-description">{{ appointment.description|truncatewords:8 }}</p>
+                                            {% endif %}
+                                            <div class="badge-row">
+                                                <span class="badge-compact type-badge">{{ appointment.get_appointment_type_display }}</span>
+                                                <span class="badge-compact priority-{{ appointment.priority }}">{{ appointment.get_priority_display }}</span>
+                                                <span class="badge-compact status-{{ appointment.status }}">{{ appointment.get_status_display }}</span>
+                                            </div>
+                                            <div class="info-row">
+                                                <div class="info-item">
+                                                    <i class="fas fa-map-marker-alt"></i>
+                                                    <span>{{ appointment.location|default:"--"|truncatechars:12 }}</span>
+                                                </div>
+                                                <div class="info-item">
+                                                    <i class="fas fa-clock"></i>
+                                                    <span>{{ appointment.start_time|time:"H:i" }}-{{ appointment.end_time|time:"H:i" }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="compact-footer">
+                                            <a href="{% url 'appointments:appointment_update' appointment.pk %}" class="btn-compact btn-secondary-compact" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                                <span class="d-none d-md-inline">Editar</span>
+                                            </a>
+                                            <a href="{% url 'appointments:appointment_delete' appointment.pk %}" class="btn-compact btn-danger-compact" title="Excluir">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-calendar-times"></i>
+                                <p>Nenhum compromisso encontrado para hoje ou os próximos dias.</p>
+                                <a href="{% url 'appointments:appointment_create' %}" class="btn btn-primary mt-2">
+                                    <i class="fas fa-plus me-1"></i>Criar Primeiro Compromisso
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/task-board.css' %}">
+    <link rel="stylesheet" href="{% static 'css/goal-board.css' %}">
+    <link rel="stylesheet" href="{% static 'css/appointment-board.css' %}">
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'js/card-animation.js' %}"></script>
+    <script src="{% static 'js/drag-and-drop.js' %}"></script>
+    <!-- Removido o script de AJAX para evitar erros 500 -->
+    <!-- O drag-and-drop ainda funciona porque ele opera no DOM já carregado -->
+{% endblock %}

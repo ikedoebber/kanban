@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Dashboard de Compromissos{% endblock %}
+
+{% block extra_css %}
+    <link href="{% static 'css/appointment-board.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<h1><i class="fas fa-chart-bar me-2"></i> Dashboard de Compromissos</h1>
+
+<div class="stats-grid">
+    <div class="stat-card primary">
+        <h6>Total</h6>
+        <h2>{{ total_appointments }}</h2>
+        <small>Compromissos</small>
+    </div>
+    
+    <div class="stat-card info">
+        <h6>Hoje</h6>
+        <h2>{{ today_appointments }}</h2>
+        <small>Compromissos</small>
+    </div>
+    
+    <div class="stat-card success">
+        <h6>Futuros</h6>
+        <h2>{{ upcoming_appointments }}</h2>
+        <small>Compromissos</small>
+    </div>
+    
+    <div class="stat-card warning">
+        <h6>Confirmados</h6>
+        <h2>{{ confirmed_appointments }}</h2>
+        <small>Compromissos</small>
+    </div>
+    
+    <div class="stat-card danger">
+        <h6>Urgentes</h6>
+        <h2>{{ urgent_appointments }}</h2>
+        <small>Compromissos</small>
+    </div>
+</div>
+
+<div class="dashboard-content">
+    <div class="dashboard-card">
+        <div class="card-header">
+            <h5><i class="fas fa-calendar-day me-2"></i> Compromissos de Hoje</h5>
+        </div>
+        <div class="card-body">
+            {% if today_appointments_list %}
+                <div class="table-responsive">
+                    <table class="dashboard-table">
+                        <thead>
+                            <tr>
+                                <th>Título</th>
+                                <th>Horário</th>
+                                <th>Prioridade</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in today_appointments_list %}
+                                <tr>
+                                    <td class="fw-medium">{{ appointment.title }}</td>
+                                    <td>{{ appointment.start_time|time:"H:i" }}</td>
+                                    <td>
+                                        <span class="priority-badge {{ appointment.priority }}">
+                                            {{ appointment.get_priority_display }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="{% url 'appointments:appointment_detail' appointment.pk %}" 
+                                           class="action-btn" 
+                                           title="Ver detalhes">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-info-circle me-1"></i> Nenhum compromisso para hoje.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="dashboard-card">
+        <div class="card-header">
+            <h5><i class="fas fa-calendar-alt me-2"></i> Próximos Compromissos</h5>
+        </div>
+        <div class="card-body">
+            {% if upcoming_appointments_list %}
+                <div class="table-responsive">
+                    <table class="dashboard-table">
+                        <thead>
+                            <tr>
+                                <th>Título</th>
+                                <th>Data</th>
+                                <th>Horário</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in upcoming_appointments_list %}
+                                <tr>
+                                    <td class="fw-medium">{{ appointment.title }}</td>
+                                    <td>{{ appointment.date|date:"d/m/Y" }}</td>
+                                    <td>{{ appointment.start_time|time:"H:i" }}</td>
+                                    <td class="text-center">
+                                        <a href="{% url 'appointments:appointment_detail' appointment.pk %}" 
+                                           class="action-btn" 
+                                           title="Ver detalhes">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-info-circle me-1"></i> Nenhum compromisso futuro.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

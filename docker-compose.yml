@@ -1,0 +1,21 @@
+services:
+  web:
+    build:
+      context: .
+      args:
+        - SECRET_KEY=${SECRET_KEY}
+        - DEBUG=${DEBUG}
+        - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+        - DATABASE_ENGINE=${DATABASE_ENGINE}
+        - DATABASE_NAME=${DATABASE_NAME}
+    ports:
+      - "48321:48321"
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+    environment:
+      - DJANGO_SETTINGS_MODULE=app.settings
+    command: python manage.py runserver 0.0.0.0:48321
+
+volumes:
+  static_volume:

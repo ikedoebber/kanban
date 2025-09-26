@@ -1,0 +1,42 @@
+<!-- includes/header.html -->
+<header>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid px-3 py-2">
+            <!-- Logo/Brand -->
+            <a class="navbar-brand d-flex align-items-center fw-bold" href="{% url 'main_dashboard' %}">
+                <div class="brand-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <span class="d-none d-sm-inline">Sistema de Agenda</span>
+            </a>
+            
+            <!-- Mobile Toggle -->
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <!-- User Actions -->
+            <div class="d-flex align-items-center ms-auto gap-2">                
+                {% if user.is_authenticated %}
+                    <div class="d-flex align-items-center gap-2">
+                        <!-- Botão de perfil -->
+                        <a href="#" class="btn btn-outline-secondary btn-sm d-flex align-items-center">
+                            <i class="fas fa-user" style="font-size: 0.8rem;"></i>
+                            <span class="d-none d-sm-inline ms-1">{{ user.username }}</span>
+                        </a>
+                        <!-- Botão de sair -->
+                        <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm d-flex align-items-center" title="Sair">
+                            <i class="fas fa-sign-out-alt" style="font-size: 0.9rem;"></i>
+                            <span class="d-none d-sm-inline ms-1"></span>
+                        </a>
+                    </div>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-sm d-flex align-items-center">
+                        <i class="fas fa-sign-in-alt me-1" style="font-size: 0.9rem;"></i>
+                        <span>Login</span>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+</header>

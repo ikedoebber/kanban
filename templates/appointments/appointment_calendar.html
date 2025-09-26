@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}Calendário de Compromissos{% endblock %}
+{% load static dict_extras %}
+
+{% block extra_css %}
+    <link href="{% static 'css/appointment-board.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid d-flex flex-column justify-content-center align-items-center min-vh-100 py-2">
+    <div class="col-12 col-xl-10 mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-calendar me-5"></i> Calendário de Compromissos</h1>
+            <div>
+                <a href="{% url 'appointments:appointment_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i> Novo Compromisso
+                </a>
+            </div>
+        </div>
+
+        <div class="card shadow-sm rounded-4">
+            <div class="card-header bg-white border-0 pb-0">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center">
+                        <a href="?month={{ prev_month }}&year={{ prev_year }}" 
+                           class="btn btn-sm btn-outline-primary rounded-circle me-2" 
+                           title="Mês anterior">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                        <h4 class="mb-0 mx-3">{{ month_name }} {{ current_year }}</h4>
+                        <a href="?month={{ next_month }}&year={{ next_year }}" 
+                           class="btn btn-sm btn-outline-primary rounded-circle ms-2" 
+                           title="Próximo mês">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </div>
+                    <div>
+                        <a href="{% url 'appointments:appointment_calendar' %}" 
+                           class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-calendar-day me-1"></i> Hoje
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered text-center table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="bg-danger bg-opacity-10 text-danger">Domingo</th>
+                                <th>Segunda</th>
+                                <th>Terça</th>
+                                <th>Quarta</th>
+                                <th>Quinta</th>
+                                <th>Sexta</th>
+                                <th class="bg-info bg-opacity-10 text-info">Sábado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for week in calendar %}
+                                <tr>
+                                    {% for day in week %}
+                                        <td class="align-top position-relative" style="height: 120px; min-width: 100px; vertical-align: top;">
+                                            {% if day != 0 %}
+                                                <div class="fw-bold mb-1 {% if day == now.day and current_month == now.month and current_year == now.year %}text-primary{% endif %}">
+                                                    {{ day }}
+                                                </div>
+                                                {% comment %}Construir a chave de data de forma mais segura{% endcomment %}
+                                                {% with year_str=current_year|stringformat:"04d" %}
+                                                    {% with month_str=current_month|stringformat:"02d" %}
+                                                        {% with day_str=day|stringformat:"02d" %}
+                                                            {% with date_key=year_str|add:"-"|add:month_str|add:"-"|add:day_str %}
+                                                                {% if appointments_by_date|get_item:date_key %}
+                                                                    {% for appointment in appointments_by_date|get_item:date_key %}
+                                                                        <div class="small mb-1 p-2 rounded 
+                                                                             {% if appointment.priority == 'urgente' %}bg-danger text-white{% elif appointment.priority == 'alta' %}bg-warning text-dark{% elif appointment.priority == 'media' %}bg-info text-white{% else %}bg-secondary text-white{% endif %}"
+                                                                             title="{{ appointment.title }} - {{ appointment.start_time|time:"H:i" }}"
+                                                                             style="cursor: pointer; overflow: hidden;">
+                                                                            <a href="{% url 'appointments:appointment_detail' appointment.pk %}" 
+                                                                               class="text-decoration-none d-block {% if appointment.priority == 'alta' %}text-dark{% else %}text-white{% endif %}"
+                                                                               title="Ver detalhes: {{ appointment.title }}">
+                                                                                <i class="fas fa-calendar-check me-1"></i>
+                                                                                {{ appointment.title|truncatechars:15 }}
+                                                                                <div class="small mt-1">
+                                                                                    <i class="fas fa-clock me-1"></i>
+                                                                                    {{ appointment.start_time|time:"H:i" }}
+                                                                                </div>
+                                                                            </a>
+                                                                        </div>
+                                                                    {% endfor %}
+                                                                {% endif %}
+                                                            {% endwith %}
+                                                        {% endwith %}
+                                                    {% endwith %}
+                                                {% endwith %}
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legenda -->
+        <div class="card mt-4 shadow-sm rounded-4">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Legenda de Prioridades</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-3">
+                    <span class="badge bg-danger">Urgente</span>
+                    <span class="badge bg-warning text-dark">Alta</span>
+                    <span class="badge bg-info text-white">Média</span>
+                    <span class="badge bg-secondary text-white">Baixa</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

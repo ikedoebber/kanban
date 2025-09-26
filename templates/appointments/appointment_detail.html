@@ -1,0 +1,164 @@
+{% extends 'base_blank.html' %}
+{% load static %}
+{% block title %}{{ appointment.title }}{% endblock %}
+
+{% block extra_css %}
+    <link href="{% static 'css/appointment-board.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="detail-layout">
+    <div class="detail-main">
+        <div class="card detail-card">
+            <div class="card-header">
+                <h2 class="mb-0">{{ appointment.title }}</h2>
+                <div class="action-buttons">
+                    <a href="{% url 'appointments:appointment_update' appointment.pk %}" class="btn btn-warning" title="Editar compromisso">
+                        <i class="fas fa-edit me-1"></i> Editar
+                    </a>
+                    <a href="{% url 'appointments:appointment_delete' appointment.pk %}" class="btn btn-danger" title="Excluir compromisso">
+                        <i class="fas fa-trash me-1"></i> Excluir
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="info-section">
+                    <div class="info-group">
+                        <p class="info-item"><strong>Tipo:</strong> 
+                            <span class="badge type-badge">{{ appointment.get_appointment_type_display }}</span>
+                        </p>
+                        <p class="info-item"><strong>Prioridade:</strong> 
+                            <span class="badge priority-badge {{ appointment.priority }}">
+                                {{ appointment.get_priority_display }}
+                            </span>
+                        </p>
+                        <p class="info-item"><strong>Status:</strong> 
+                            <span class="badge status-badge {{ appointment.status }}">
+                                {{ appointment.get_status_display }}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="info-group">
+                        {% if appointment.is_today %}
+                            <p class="info-item today-label">
+                                <i class="fas fa-calendar-day me-1"></i> Hoje!
+                            </p>
+                        {% elif appointment.is_upcoming %}
+                            <p class="info-item upcoming-label">
+                                <i class="fas fa-calendar-plus me-1"></i> Futuro
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-group">
+                        <p class="info-item"><i class="fas fa-calendar me-1"></i> <strong>Data:</strong> {{ appointment.date|date:"d/m/Y" }}</p>
+                        <p class="info-item"><i class="fas fa-clock me-1"></i> <strong>Horário:</strong> {{ appointment.start_time|time:"H:i" }} - {{ appointment.end_time|time:"H:i" }}</p>
+                        <p class="info-item"><i class="fas fa-hourglass-half me-1"></i> <strong>Duração:</strong> {{ appointment.duration }} minutos</p>
+                    </div>
+                    <div class="info-group">
+                        {% if appointment.location %}
+                            <p class="info-item"><i class="fas fa-map-marker-alt me-1"></i> <strong>Local:</strong> {{ appointment.location }}</p>
+                        {% endif %}
+                        <p class="info-item"><i class="fas fa-user me-1"></i> <strong>Usuário:</strong> {{ appointment.user.get_full_name|default:appointment.user.username }}</p>
+                    </div>
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-group">
+                        <p class="info-item"><i class="fas fa-plus-circle me-1"></i> <strong>Criado em:</strong> {{ appointment.created_at|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    <div class="info-group">
+                        <p class="info-item"><i class="fas fa-sync me-1"></i> <strong>Atualizado em:</strong> {{ appointment.updated_at|date:"d/m/Y H:i" }}</p>
+                    </div>
+                </div>
+                
+                {% if appointment.description %}
+                    <div class="description-section">
+                        <h5><i class="fas fa-align-left me-1"></i> Descrição:</h5>
+                        <div class="description-content">
+                            {{ appointment.description|linebreaks }}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="detail-sidebar">
+        <div class="card sidebar-card">
+            <div class="card-header">
+                <h5><i class="fas fa-bolt me-1"></i> Ações Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <form id="statusForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="statusSelect" class="form-label">Alterar Status</label>
+                        <select class="form-select" id="statusSelect" name="status">
+                            {% for value, label in appointment.STATUS_CHOICES %}
+                                <option value="{{ value }}" {% if appointment.status == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-sync me-1"></i> Atualizar Status
+                    </button>
+                </form>
+                
+                <hr class="divider">
+                
+                <div class="text-center">
+                    <a href="{% url 'appointments:appointment_calendar' %}?year={{ appointment.date.year }}&month={{ appointment.date.month }}" 
+                       class="btn btn-info w-100">
+                        <i class="fas fa-calendar me-1"></i> Ver no Calendário
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#statusForm').on('submit', function(e) {
+        e.preventDefault();
+        var status = $('#statusSelect').val();
+        var appointmentId = {{ appointment.pk }};
+        
+        $.ajax({
+            url: '{% url "appointments:update_appointment_status" appointment.pk %}',
+            method: 'POST',
+            data: {
+                'status': status,
+                'csrfmiddlewaretoken': $('[name=csrfmiddlewaretoken]').val()
+            },
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            beforeSend: function() {
+                $('#statusForm button').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Atualizando...');
+            },
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert('Erro ao atualizar status: ' + (response.message || 'Tente novamente'));
+                }
+            },
+            error: function() {
+                alert('Erro de conexão. Tente novamente.');
+            },
+            complete: function() {
+                $('#statusForm button').prop('disabled', false).html('<i class="fas fa-sync me-1"></i> Atualizar Status');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

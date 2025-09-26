@@ -1,0 +1,412 @@
+/* ================
+   ESTILOS PARA BOARD DE TAREFAS - DASHBOARD
+   ================= */
+
+.tasks-board {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+}
+
+.tasks-board::-webkit-scrollbar {
+    height: 8px;
+}
+
+.tasks-board::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+}
+
+.tasks-board::-webkit-scrollbar-thumb {
+    background: var(--gradient-button);
+    border-radius: 4px;
+}
+
+.tasks-board::-webkit-scrollbar-thumb:hover {
+    background: var(--gradient-hover);
+}
+
+.task-column {
+    background: var(--bg-glass);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    min-width: 300px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: var(--transition);
+    position: relative;
+}
+
+.task-column:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--border-glow);
+}
+
+.task-column::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    opacity: 0.8;
+}
+
+/* Cores específicas por status */
+.task-column.todo::before {
+    background: linear-gradient(90deg, #ffc107, #ff9800);
+}
+
+.task-column.in-progress::before {
+    background: linear-gradient(90deg, #17a2b8, #0dcaf0);
+}
+
+.task-column.done::before {
+    background: linear-gradient(90deg, #28a745, #20c997);
+}
+
+.column-header {
+    padding: 1.25rem 1.5rem;
+    color: #ffffff; /* Cor sólida */
+    font-weight: 600;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.column-header i {
+    color: #93c5fd; /* Cor sólida */
+    font-size: 1rem;
+}
+
+.task-count {
+    background: rgba(255, 255, 255, 0.1);
+    color: #93c5fd; /* Cor sólida */
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    min-width: 28px;
+    text-align: center;
+}
+
+.column-content {
+    padding: 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 200px;  /* ✅ Altura mínima para aparência */
+    /* max-height: 450px; */  /* ❌ Removido para altura dinâmica */
+    overflow-y: auto;   /* ✅ Rola se tiver muitas tarefas */
+}
+
+.column-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.column-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.column-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+
+.column-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.task-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: var(--transition);
+    position: relative;
+}
+
+.task-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--border-glow);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 212, 255, 0.15);
+}
+
+.task-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.task-card:hover::before {
+    opacity: 1;
+}
+
+.task-card.dragging {
+    opacity: 0.5;
+    transform: scale(0.98);
+}
+
+.task-header {
+    padding: 1rem 1rem 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.task-title {
+    color: #ffffff; /* Cor sólida */
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.4;
+    flex: 1;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.due-date {
+    background: rgba(255, 255, 255, 0.1);
+    color: #d1d5db; /* Cor sólida */
+    padding: 0.2rem 0.5rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.task-body {
+    padding: 0.5rem 1rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.task-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.task-meta .badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+    color: #ffffff; /* Cor sólida */
+}
+
+/* Badges de prioridade */
+.priority-badge.high { 
+    background: rgba(239, 68, 68, 0.25); 
+    color: #fed7d7; 
+}
+
+.priority-badge.medium { 
+    background: rgba(245, 158, 11, 0.25); 
+    color: #fef3c7; 
+}
+
+.priority-badge.low { 
+    background: rgba(156, 163, 175, 0.2); 
+    color: #e2e8f0; 
+}
+
+.task-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: auto;
+}
+
+.action-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #9ca3af; /* Cor sólida */
+    transition: all 0.2s ease;
+    text-decoration: none;
+    font-size: 0.8rem;
+}
+
+.action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--border-glow);
+    color: #3b82f6; /* Cor sólida */
+    box-shadow: 0 2px 8px rgba(0, 212, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.action-btn .text-danger {
+    color: #ef4444 !important;
+}
+
+.action-btn:hover .text-danger {
+    color: #f87171 !important;
+}
+
+/* Estado vazio */
+.column-content .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem 1rem;
+    color: #9ca3af; /* Cor sólida */
+    font-style: italic;
+    height: 100%;
+    min-height: 200px;
+}
+
+.column-content .empty-state i {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #9ca3af; /* Cor sólida */
+    opacity: 0.5;
+}
+
+.column-content .empty-state p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #9ca3af; /* Cor sólida */
+}
+
+/* Efeitos de hover nas colunas */
+.task-column:hover .column-header {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.task-column:hover .task-count {
+    background: rgba(0, 212, 255, 0.2);
+    color: var(--primary);
+    transform: scale(1.1);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .tasks-board {
+        gap: 1rem;
+    }
+    
+    .task-column {
+        min-width: 250px;
+    }
+    
+    .column-header {
+        padding: 1rem 1.25rem;
+        font-size: 1rem;
+    }
+    
+    .column-content {
+        padding: 0.75rem;
+        /* max-height: 400px; */  /* ❌ Removido */
+        min-height: 300px;
+    }
+    
+    .task-header {
+        padding: 0.875rem 0.875rem 0.5rem;
+    }
+    
+    .task-body {
+        padding: 0.5rem 0.875rem 0.875rem;
+    }
+    
+    .task-title {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .task-column {
+        min-width: 220px;
+    }
+    
+    .column-header {
+        padding: 0.875rem 1rem;
+        font-size: 0.95rem;
+    }
+    
+    .column-content {
+        padding: 0.625rem;
+        /* max-height: 350px; */  /* ❌ Removido */
+    }
+    
+    .task-header {
+        padding: 0.75rem 0.75rem 0.5rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .task-body {
+        padding: 0.5rem 0.75rem 0.75rem;
+    }
+    
+    .task-title {
+        font-size: 0.85rem;
+    }
+    
+    .due-date {
+        align-self: flex-start;
+        font-size: 0.7rem;
+    }
+    
+    .task-meta .badge {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.4rem;
+    }
+}
+
+/* Animação suave para o contador */
+.task-count {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Melhor espaçamento para estado vazio quando há scroll */
+.column-content:has(.empty-state) {
+    overflow: hidden;
+}
+
+.task-column.drag-over,
+.goal-column.drag-over {
+    background-color: rgba(0, 123, 255, 0.1);
+    border: 2px dashed var(--primary);
+}
+
+/* REMOVER GRADIENTE DE TODAS AS FONTES */
+.column-header, .task-title, .due-date, .task-meta .badge, .action-btn, 
+.column-content .empty-state, .column-content .empty-state p {
+    -webkit-background-clip: none !important;
+    background-clip: none !important;
+    -webkit-text-fill-color: initial !important;
+}

@@ -1,0 +1,72 @@
+{% extends 'base_blank.html' %}
+{% load static %}
+{% block title %}Excluir Meta{% endblock %}
+
+{% block extra_css %}
+    <link href="{% static 'css/goal-board.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card delete-card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i> Confirmar Exclusão
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <strong>Atenção!</strong> Esta ação não pode ser desfeita.
+                    </div>
+                    
+                    <div class="goal-info">
+                        <h5 class="title">
+                            <i class="fas fa-bullseye me-2"></i>
+                            "{{ goal.title }}"
+                        </h5>
+                        
+                        {% if goal.description %}
+                            <div class="description-section">
+                                <p class="label"><i class="fas fa-align-left me-1"></i> Descrição:</p>
+                                <p class="value">{{ goal.description|truncatewords:15 }}</p>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <p class="label"><i class="fas fa-user me-1"></i> Criado por:</p>
+                                <p class="value">{{ goal.created_by.get_full_name|default:goal.created_by.username }}</p>
+                            </div>
+                            <div class="info-item">
+                                <p class="label"><i class="fas fa-calendar me-1"></i> Prazo:</p>
+                                <p class="value">
+                                    {% if goal.due_date %}
+                                        {{ goal.due_date|date:"d/m/Y" }}
+                                    {% else %}
+                                        <span class="text-muted">Sem prazo</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="button-group d-flex justify-content-end mt-4">
+                            <a href="{% url 'main_dashboard' %}" class="btn btn-secondary btn-sm me-2">
+                                <i class="fas fa-arrow-left me-1"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <i class="fas fa-trash me-1"></i> Excluir
+                        </button>
+                        </div> 
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

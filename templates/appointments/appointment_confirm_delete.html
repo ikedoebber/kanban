@@ -1,0 +1,64 @@
+{% extends 'base_blank.html' %}
+{% block title %}Excluir Compromisso{% endblock %}
+{% load static %}
+
+{% block extra_css %}
+    <link href="{% static 'css/appointment-board.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container vh-100 d-flex align-items-center justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card delete-card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i> Confirmar Exclusão
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Atenção!</strong> Esta ação não pode ser desfeita.
+                </div>
+                
+                <div class="appointment-info">
+                    <h5 class="title">
+                        <i class="fas fa-calendar-times me-2"></i>
+                        "{{ appointment.title }}"
+                    </h5>
+                    
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <p class="label"><i class="fas fa-calendar me-1"></i> Data:</p>
+                            <p class="value">{{ appointment.date|date:"d/m/Y" }}</p>
+                        </div>
+                        <div class="info-item">
+                            <p class="label"><i class="fas fa-clock me-1"></i> Horário:</p>
+                            <p class="value">{{ appointment.start_time|time:"H:i" }} - {{ appointment.end_time|time:"H:i" }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if appointment.description %}
+                        <div class="description mt-3">
+                            <p class="label"><i class="fas fa-align-left me-1"></i> Descrição:</p>
+                            <p class="value">{{ appointment.description|truncatewords:10 }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                        <div class="button-group d-flex justify-content-end mt-4">
+                        <a href="{% url 'main_dashboard' %}" class="btn btn-secondary btn-sm me-2">
+                            <i class="fas fa-arrow-left me-1"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash me-1"></i> Excluir
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
