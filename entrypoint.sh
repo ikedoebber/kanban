@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Verifica se está em modo de debug
+# Verifica se está em modo debug
 if [ "$DEBUG" = "True" ] || [ "$DEBUG" = "true" ]; then
     echo "⚠️ Modo DEBUG ativado"
 else
@@ -9,11 +9,16 @@ else
 fi
 
 # Executa migrations
-echo "🔍 Verificando migrations..."
+echo "🔍 Aplicando migrations..."
 python manage.py migrate --noinput
 echo "✅ Migrations concluídas"
 
-# Verifica se o banco está acessível
+# Coleta arquivos estáticos
+echo "📦 Coletando arquivos estáticos..."
+python manage.py collectstatic --noinput
+echo "✅ Staticfiles coletados"
+
+# Testa conexão com o banco
 echo "🔌 Testando conexão com o banco..."
 python manage.py shell -c "
 import sys
